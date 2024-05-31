@@ -6,45 +6,51 @@ import Button from "./Button";
 import { useRouter } from "next/navigation";
 import { addUser } from "@/lib/actions";
 
+const EmailRegex = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+
 const Form = () => {
   const [formData, setFormData] = useState({
     email: "",
     name: "",
     password: "",
   });
-  const [isLoading , setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   const { name, email, password } = formData;
 
-  const router = useRouter()
+  const router = useRouter();
 
   async function handleSubmit() {
     try {
-      setIsLoading(true)
-      const { error } = await addUser(formData);
-      if (error) {
-         return toast.error(error.message)
-      } 
-      setFormData({
-        email: "",
-        name: "",
-        password: "",
-      })
-      router.refresh()
-      toast.success('new user added successfully')
+      if (EmailRegex.test(formData?.email)) {
+        setIsLoading(true);
+        const { error } = await addUser(formData);
+        if (error) {
+          return toast.error(error.message);
+        }
+        setFormData({
+          email: "",
+          name: "",
+          password: "",
+        });
+        router.refresh();
+        toast.success("new user added successfully");
+      }else {
+        toast.error("Invalid Email");
+      }
     } catch (error) {
-      return toast.error(error.message)
-    }finally{
-      setIsLoading(false)
+      return toast.error(error.message);
+    } finally {
+      setIsLoading(false);
     }
   }
 
-  const handleChange = (e)=>{
+  const handleChange = (e) => {
     setFormData(() => ({
       ...formData,
       [e.target.name]: e.target.value,
     }));
-  }
+  };
 
   return (
     <div className="py-10 flex items-center">
