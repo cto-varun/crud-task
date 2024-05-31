@@ -1,0 +1,44 @@
+version: "3.9"
+services:
+    backend:
+        container_name: backend
+        image: backend
+        build:
+            context: ./backend
+            dockerfile: backend.dockerfile
+        ports:
+            - 8000:8000
+        environment:
+            - DATABASE_URL=postgresql://postgres:postgres@db:5432/postgres?schema=public
+        command: >
+            sh -c "
+            npx prisma generate &&
+            npx prisma migrate dev --name create_user_schema &&
+            npm start
+            "
+
+    db:
+        container_name: db
+        image: postgres:latest
+        restart: always
+        environment:
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: postgres
+            POSTGRES_DB: postgres
+        ports:
+            - 5432:5432
+    frontend:
+        container_name: frontend
+        image: frontend
+        build:
+            context: ./frontend
+            dockerfile: frontend.dockerfile
+        ports:
+            - 3000:3000
+        environment:
+            - NEXT_PUBLIC_API_URL=http://localhost:8000
+        restart: always
+        depends_on:
+            - db
+            - backend
+
